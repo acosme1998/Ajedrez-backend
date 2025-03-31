@@ -11,6 +11,9 @@ class Caballo extends Ficha{
         return (deltaX == deltaY) || (this.x == nuevoX) || (this.y == nuevoY);
     }
 
+    // bidimensional y aomprueba si hay las fichas son a las que se pueden mover
+    // devuelve la posicion posible
+
     // validate if it is alive
     public Caballo movimiento(Caballo caballo ,int opcion){
         if (!caballo.isVivo()){
