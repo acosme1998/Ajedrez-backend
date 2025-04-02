@@ -1,19 +1,20 @@
 package Model;
 
+import Config.Color;
+
 class Casilla {
     private Ficha ficha;
-    private int x;
-    private int y;
-
+    private final int x;
+    private final int y;
 
     public Casilla(int x, int y) {
-        this.x=x;
-        this.y=y;
-        this.ficha = null;//para saber si contiene algo
+        this.x = x;
+        this.y = y;
+        this.ficha = null; // Casilla vacÃ­a al inicio
     }
 
     public boolean estaOcupada() {
-        return ficha != null;//cambiar estado de ocupado
+        return ficha != null;
     }
 
     public Ficha getFicha() {
@@ -35,57 +36,85 @@ class Casilla {
     public int getY() {
         return y;
     }
-
 }
 
-// ----------------------------------------------TABLERO---------------------------------------
 class Tablero {
-    // -------van en casilla
-    // private boolean ocupado;
-    // private boolean equipo;
+    private final int filas = 8, columnas = 8;
+    private final Casilla[][] casillas;
 
-    private int filas=8, columnas=8;
-    // usamo el objeto Casilla que contiene los parametros que necesita cada casilla
-    // esta en foramto array bidimencional es el tablero
-
-    private Casilla[][] casilla;
-
-    public Tablero(int filas, int columnas) {
-        this.filas = filas;
-        this.columnas = columnas;
-        this.casilla = new Casilla[filas][columnas];
-
+    public Tablero() {
+        casillas = new Casilla[filas][columnas];
         for (int i = 0; i < filas; i++) {
             for (int j = 0; j < columnas; j++) {
-                casilla[i][j] = new Casilla(i,j);// las celulas cojen una posicion de x e y en cada lado
+                casillas[i][j] = new Casilla(i, j);
             }
         }
     }
 
     public boolean estaOcupada(int x, int y) {
-        return casilla[x][y].estaOcupada();
+        return dentroDelTablero(x, y) && casillas[x][y].estaOcupada();
     }
 
     public Ficha getPieza(int x, int y) {
-        return casilla[x][y].getFicha();
+        return dentroDelTablero(x, y) ? casillas[x][y].getFicha() : null;
     }
 
     public void colocarPieza(Ficha ficha, int x, int y) {
-        casilla[x][y].colocarPieza(ficha);
-    }
-
-    public void eliminarPieza(int x, int y) {
-        casilla[x][y].eliminarPieza();
-    }
-
-    public void imprimirTablero() {
-        for (int i = 0; i < filas; i++) {
-            for (int j = 0; j < columnas; j++) {
-                System.out.print(casilla[i][j].estaOcupada() ? "[X]" : "[ ]");
-            }
-            System.out.println();
+        if (dentroDelTablero(x, y)) {
+            casillas[x][y].colocarPieza(ficha);
         }
     }
 
+    public void eliminarPieza(int x, int y) {
+        if (dentroDelTablero(x, y)) {
+            casillas[x][y].eliminarPieza();
+        }
+    }
+
+    private boolean dentroDelTablero(int x, int y) {
+        return x >= 0 && x < filas && y >= 0 && y < columnas;
+    }
+
+    public void inicializarPiezas() {
+        // Colocar peones blancos
+        for (int col = 0; col < columnas; col++) {
+            Peon peonBlanco = new Peon(6, col, Color.BLANCO);
+            colocarPieza(peonBlanco, 6, col);
+        }
+
+        // Colocar peones negros
+        for (int col = 0; col < columnas; col++) {
+            Peon peonNegro = new Peon(1, col, Color.NEGRO);
+            colocarPieza(peonNegro, 1, col);
+        }
+    }
+
+    public boolean moverPieza(int xActual, int yActual, int xNueva, int yNueva) {
+        if (!dentroDelTablero(xActual, yActual) || !dentroDelTablero(xNueva, yNueva)) {
+            return false;
+        }
+        
+        Ficha ficha = getPieza(xActual, yActual);
+        if (ficha == null || !ficha.esMovimientoValido(xNueva, yNueva, this)) {
+            return false;
+        }
+        
+        if (estaOcupada(xNueva, yNueva)) {
+            Ficha fichaEnemiga = getPieza(xNueva, yNueva);
+            if (fichaEnemiga.getEquipo() != ficha.getEquipo()) {
+                fichaEnemiga.matarFicha();
+                eliminarPieza(xNueva, yNueva);
+            } else {
+                return false; // No se puede mover a una casilla ocupada por una ficha del mismo equipo
+            }
+        }
+        
+        eliminarPieza(xActual, yActual);
+        colocarPieza(ficha, xNueva, yNueva);
+        ficha.setX(xNueva);
+        ficha.setY(yNueva);
+
+        return true;
+    }
 
 }
