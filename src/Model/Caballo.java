@@ -4,7 +4,7 @@ class Caballo extends Ficha{
         super(x, y, equipo);
     }
 
-    @Override
+    @Overwrite
     public boolean esMovimientoValido(int nuevoX, int nuevoY, Tablero tablero) {
         int deltaX = Math.abs(nuevoX - this.x);
         int deltaY = Math.abs(nuevoY - this.y);
@@ -15,7 +15,7 @@ class Caballo extends Ficha{
     // devuelve la posicion posible
 
     // validate if it is alive
-    public Caballo movimiento(Caballo caballo ,int opcion){
+    public Caballo movimiento(Caballo caballo, int opcion){
         if (!caballo.isVivo()){
             System.out.println("Caballo esta muerto");
             return;
