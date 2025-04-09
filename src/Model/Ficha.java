@@ -20,13 +20,8 @@ public abstract class Ficha {
     public Ficha(int x, int y, boolean vivo, Color equipo) {
         this.x = x;
         this.y = y;
-<<<<<<< Updated upstream
-        this.vivo = false; // estado inicial muerta para poder hacer mas adelante que se vea , parece vacio
-        this.equipo = equipo; // el tablero    
-=======
         this.vivo = vivo; // estado inicial muerta para poder hacer mas adelante que se vea , parece vacio
         this.equipo = equipo; // el tablero
->>>>>>> Stashed changes
     }
 
     public int getX() {
@@ -71,9 +66,6 @@ public abstract class Ficha {
      public abstract boolean esMovimientoValido(int nuevoX, int nuevoY, Tablero tablero);
     
 
-<<<<<<< Updated upstream
-}
-=======
     //colocaremos todos los posibles movimeintos 
     public abstract List<int[]> listaMovimientosValidos(Tablero tablero);
 
@@ -81,4 +73,3 @@ public abstract class Ficha {
     public abstract String getRutaImagen();
 
 }
->>>>>>> Stashed changes

@@ -66,7 +66,7 @@ public class Alfil extends Ficha {
                     movimientos.add(new int[] { xActual, yActual, 0});// tercer valor sobre que tipo de movimeinto es(normal,captura,jaque)
                 } else {
                     Ficha pieza = tablero.getPieza(xActual, yActual);
-                    if (pieza.getEquipo() != this.equipo) {//si no es del mismo equipo
+                    if (pieza.getEquipo() != this.equipo) {
                         int tipoMovimiento = (pieza instanceof Rey) ? 2 : 1; 
                         //instanceof sirve para verificar que tipo de objeto es( verifica si el objeto ficha es Rey)
                         //si es Rey devuvel tipoMovimiento =2, amenaza jaque, sino 1= captura

@@ -15,6 +15,8 @@ public class VentanaTablero {
     private View.TableroVista tablero;
     // public int filaPeones = 6;
     private ControladorAjedrez controlador;
+    private JTextArea areaMensajes;
+
 
     // Rutas imagenes piezas blancas/negras
     // private ImageIcon cargarImagen(String ruta) {
@@ -58,12 +60,22 @@ public class VentanaTablero {
         JButton parar = new JButton("Parar");
         JButton ajustes = new JButton("Ajustes");
 
+        areaMensajes = new JTextArea(2, 15); 
+        areaMensajes.setEditable(false);
+        areaMensajes.setLineWrap(true);
+        areaMensajes.setWrapStyleWord(true);
+        areaMensajes.setFont(new Font("Times New Roman", Font.PLAIN, 16)); 
+
+        JScrollPane scroll = new JScrollPane(areaMensajes);
+        scroll.setPreferredSize(new Dimension(180, 60)); 
+
         ventana.setLayout(new BorderLayout());
 
         menuDerecha.add(opciones);
         menuDerecha.add(jugar);
         menuDerecha.add(parar);
         menuDerecha.add(ajustes);
+        menuDerecha.add(scroll);
 
         controlador = new ControladorAjedrez(new Model.Tablero(), tablero, this); // Pasar la instancia
 
@@ -87,4 +99,14 @@ public class VentanaTablero {
     public JButton getJugarButton() {
         return jugar; // Devuelve el botón jugar
     }
+
+    public void mostrarMensaje(String mensaje) {
+        areaMensajes.setText(mensaje); // Muestra un único mensaje
+    }
+    
+    
+    public void limpiarMensajes() {
+        areaMensajes.setText("");
+    }
+    
 }
