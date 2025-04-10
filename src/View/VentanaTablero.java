@@ -1,37 +1,46 @@
 package View;
 
 import javax.swing.*;
+
+import Config.Color;
+import Controller.ControladorAjedrez;
+// import View.Tablero;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.awt.*;
 
 public class VentanaTablero {
+
+    private JButton jugar; // Definir el botón como atributo
     private JFrame ventana;
     private JPanel menuDerecha;
-    private Tablero tablero;
-    public int filaPeones = 6;
-    //Rutas imagenes piezas blancas/negras
-    ImageIcon peonBlanco = new ImageIcon("src/PiezasAjedrez/Peon_blanco.png");
-    ImageIcon torreBlanca= new ImageIcon("src/PiezasAjedrez/Torre_blanca.png");
-    ImageIcon caballoBlanco =new ImageIcon( "src/PiezasAjedrez/Caballo_blanco.png");
-    ImageIcon alfilBlanco = new ImageIcon("src/PiezasAjedrez/Alfil_blanco.png");
-    ImageIcon reinaBlanca = new ImageIcon("src/PiezasAjedrez/Reina_blanca.png");
-    ImageIcon reyBlanco = new ImageIcon("src/PiezasAjedrez/Rey_blanco.png");
+    private View.TableroVista tablero;
+    // public int filaPeones = 6;
 
-    ImageIcon peonNegro = new ImageIcon("src/PiezasAjedrez/Peon_negro.png");
-    ImageIcon torreNegra = new ImageIcon("src/PiezasAjedrez/Torre_negra.png");
-    ImageIcon caballoNegro =new ImageIcon( "src/PiezasAjedrez/Caballo_negro.png");
-    ImageIcon alfilNegro = new ImageIcon("src/PiezasAjedrez/Alfil_negro.png");
-    ImageIcon reinaNegra = new ImageIcon("src/PiezasAjedrez/Reina_negra.png");
-    ImageIcon reyNegro= new ImageIcon("src/PiezasAjedrez/Rey_negro.png");
+    private JLabel etiquetaTemporizador;
+    private JTextArea areaMensajes;
+    private ControladorAjedrez controlador;
+    private Timer temporizador;
 
-     
+    private AtomicInteger contadorTiempo = new AtomicInteger(0); // Contador de segundos para usarlo con lambda
+    private int totalTiempo = 0;
+    private int minutosRestantes = 0;
+    private int segundosRestantes = 0;
+    private boolean detenerTemporizador = false;
 
+    // public VentanaTablero(Model.Tablero modelo){
+    public VentanaTablero(View.TableroVista tablero) {
+        this.tablero = tablero;
 
-    public VentanaTablero(){
         ventana = new JFrame("Ajedrez");
         ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         ventana.setSize(1911, 982);
 
-        tablero = new Tablero();
+        // tablero = new Tablero(); // Vista del tablero
+        // View.Tablero tablero = new View.Tablero();
+        // controlador = new ControladorAjedrez(modelo, tablero); // Conectar lógica y
+        // vista
         tablero.setPreferredSize(new Dimension(982, 982));
 
         menuDerecha = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -42,78 +51,164 @@ public class VentanaTablero {
 
         JButton jugar = new JButton("Jugar");
         JButton parar = new JButton("Parar");
-        JButton ajustes = new JButton("Ajustes");
+        JButton ajustes = new JButton("Rendirse");
+
+        areaMensajes = new JTextArea(2, 15);
+        areaMensajes.setEditable(false);
+        areaMensajes.setLineWrap(true);
+        areaMensajes.setWrapStyleWord(true);
+        areaMensajes.setFont(new Font("Times New Roman", Font.PLAIN, 16));
+
+        JScrollPane scroll = new JScrollPane(areaMensajes);
+        scroll.setPreferredSize(new Dimension(180, 60));
 
         ventana.setLayout(new BorderLayout());
 
         menuDerecha.add(opciones);
         menuDerecha.add(jugar);
         menuDerecha.add(parar);
-        menuDerecha.add(ajustes);
-        
+        menuDerecha.add(scroll);
+        ;
+
+        controlador = new ControladorAjedrez(new Model.Tablero(), tablero, this); // Pasar la instancia
+
         jugar.setPreferredSize(new Dimension(70, 50));
         parar.setPreferredSize(new Dimension(70, 50));
-        ajustes.setPreferredSize(new Dimension(70, 50));
+        // ajustes.setPreferredSize(new Dimension(70, 50));
         opciones.setPreferredSize(new Dimension(50, 70));
 
-        for(int fil = 0; fil < Tablero.CANTIDAD_CASILLAS; fil++){
-            for(int col = 0; col < Tablero.CANTIDAD_CASILLAS; col++){
-                //Color del tablero
-                if((fil + col) % 2 == 0){
-                    tablero.getCasillas()[fil][col].setBackground(new Color(0xD3D3D3));
+        // Configurar la acción del botón "Jugar"
+        jugar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controlador.iniciarJuego();
+                iniciarTemporizador(0, 0, 0);
+
+                //Deshabilitar el boton despues del primer click
+                jugar.setEnabled(false);
+            }
+        });
+
+        parar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //Condiciones ara cambiar nombre de etiqueta y empezar temporizador
+                if(detenerTemporizador){
+                    temporizador.start();
+                    parar.setText("Pausar");
                 }
                 else{
-                    tablero.getCasillas()[fil][col].setBackground(new Color(0xffffff));
+                    temporizador.stop();
+                    parar.setText("Reanudar");
                 }
-                //Colocar torre blanca/negra
-                if((fil == 7 && col == 0) || (fil == 7 && col == 7)){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(torreBlanca.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                if((fil == 0 && col == 0) || (fil == 0 && col == 7)){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(torreNegra.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                //Colocar caballo blanco/negro
-                if((fil == 7 && col == 1) || (fil == 7 && col == 6)){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(caballoBlanco.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                if((fil == 0 && col == 1) || (fil == 0 && col == 6)){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(caballoNegro.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                //Colocar alfil blanco/negro
-                if((fil == 7 && col == 2) || (fil == 7 && col == 5)){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(alfilBlanco.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                if((fil == 0 && col == 2) || (fil == 0 && col == 5)){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(alfilNegro.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                //Colocar reina blanca/negra
-                if(fil == 7 && col == 3){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(reinaBlanca.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                if(fil == 0 && col == 3){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(reinaNegra.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                //Colocar rey blanco/negro
-                if(fil == 7 && col == 4){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(reyBlanco.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                if(fil == 0 && col == 4){
-                    tablero.getCasillas()[fil][col].setIcon(new ImageIcon(reyNegro.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                //Colocar peones blancos/negros
-                for(int columna = 0; columna < tablero.getCasillas()[filaPeones].length; columna++){
-                    tablero.getCasillas()[filaPeones][columna].setIcon(new ImageIcon(peonBlanco.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
-                filaPeones = 1;
-                for(int columna = 0; columna < tablero.getCasillas()[filaPeones].length; columna++){
-                    tablero.getCasillas()[filaPeones][columna].setIcon(new ImageIcon(peonNegro.getImage().getScaledInstance(50, 50, Image.SCALE_DEFAULT)));
-                }
+                detenerTemporizador = !detenerTemporizador; //Cambiar el estado
             }
-        }
+        });
 
         ventana.add(tablero, BorderLayout.WEST);
-        ventana.add(menuDerecha,BorderLayout.EAST);
+        ventana.add(menuDerecha, BorderLayout.EAST);
 
         ventana.setVisible(true);
+
+        etiquetaTemporizador = new JLabel("Tiempo: 00:00");
+        etiquetaTemporizador.setFont(new Font("Times New Roman", Font.BOLD, 16));
+        menuDerecha.add(etiquetaTemporizador);
     }
+
+    //MEtodo para inicializar el temporizador segun el metodo seleccionado
+    public void iniciarTemporizador(int minutosInfinito, int minutosTiempoLimitado, int minutosTiempoTurnos) {
+        // Obtener la respuesta seleccionada en la posición 0
+        String respuestaModo = Ventana.configuracion.getRespuestas(0) == null ? "Infinito" : Ventana.configuracion.getRespuestas(0);
+
+        if (respuestaModo.equals("Infinito")) {
+            minutosInfinito = 0;
+            totalTiempo = 0;
+
+            temporizador = new Timer(1000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    totalTiempo++;
+                    minutosRestantes = totalTiempo / 60;
+                    segundosRestantes = totalTiempo % 60;
+
+                    etiquetaTemporizador.setText(String.format("Tiempo: %02d:%02d", minutosRestantes, segundosRestantes));
+                }
+            });
+
+            temporizador.start();
+        }
+
+        if (respuestaModo.equals("Tiempo Limitado")) {
+            //Coger el valor que esta guardado en la posicon del array y pasarlo a numerico
+            minutosTiempoLimitado = Integer.parseInt(Ventana.configuracion.getRespuestas(1));
+            totalTiempo = minutosTiempoLimitado * 60; //pasar los minutos a segundos
+
+            temporizador = new Timer(1000, new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    totalTiempo--; // Resta segundos
+                    minutosRestantes = totalTiempo / 60;
+                    segundosRestantes = totalTiempo % 60;
+
+                    etiquetaTemporizador.setText(String.format("Tiempo: %02d:%02d", minutosRestantes, segundosRestantes));
+
+                    //Condicion tiepo acabado
+                    if(totalTiempo == 0){
+                        temporizador.stop();
+                        etiquetaTemporizador.setText("Tiempo agotado!");
+                    }
+                }
+            });
+
+            temporizador.start();
+        }
+
+        if (respuestaModo.equals("Tiempo por Turnos")) {
+            minutosTiempoTurnos = Integer.parseInt(Ventana.configuracion.getRespuestas(2));
+            totalTiempo = minutosTiempoTurnos * 60;
+
+            temporizador = new Timer(1000, new ActionListener() {
+                Color turno = controlador.getModelo().getTurno();
+                @Override
+                public void actionPerformed(ActionEvent e) {
+
+                    totalTiempo--; // Resta segundos
+                    minutosRestantes = totalTiempo / 60;
+                    segundosRestantes = totalTiempo % 60;
+
+                    etiquetaTemporizador.setText(String.format("Tiempo: %02d:%02d", minutosRestantes, segundosRestantes));
+
+                    //Condicion tiempo acabado
+                    if(totalTiempo == 0){
+                        temporizador.stop();
+                        etiquetaTemporizador.setText("Tiempo agotado!");
+                        controlador.cambioTurno();
+                    } else if (turno != controlador.getModelo().getTurno()){
+                        // cuando mueves la ficha cambia el turno(ref: model/tablero > moverPieza)
+                        // si es diferente del turno inicial cambio de turno
+                        temporizador.stop();
+                        etiquetaTemporizador.setText("Cambio de turno!");
+                    }
+                }
+            });
+
+            temporizador.start();
+        }
+
+    }
+
+
+
+    public JButton getJugarButton() {
+        return jugar; // Devuelve el botón jugar
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        areaMensajes.setText(mensaje); // Muestra un único mensaje
+    }
+
+    public void limpiarMensajes() {
+        areaMensajes.setText("");
+    }
+
 }

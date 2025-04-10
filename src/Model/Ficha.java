@@ -6,6 +6,9 @@ package Model;
  * -Evitar instanciar fichas genéricas (no tiene sentido crear una "Ficha" sin definir qué tipo es).
  */
 
+import java.util.ArrayList;
+import java.util.List;
+
 import Config.Color;
 
 public abstract class Ficha {
@@ -18,7 +21,7 @@ public abstract class Ficha {
     public Ficha(int x, int y, boolean vivo, Color equipo) {
         this.x = x;
         this.y = y;
-        this.vivo = false; // estado inicial muerta para poder hacer mas adelante que se vea , parece vacio
+        this.vivo = vivo; // estado inicial muerta para poder hacer mas adelante que se vea , parece vacio
         this.equipo = equipo; // el tablero
     }
 
@@ -46,17 +49,13 @@ public abstract class Ficha {
         return equipo;
     }
 
-    // vivo o muerto
+    // verificar k este vivo
     public boolean isVivo() {
         return vivo;
     }
 
-    // cambio de true a false o visceversa(false=muerto,true=vivo)
-    // public void setVivo(boolean vivo) {
-    //     this.vivo = vivo;
-    // }
-
-    public void matarFicha() {//si se peude falso despues para poner en muerto
+    public void matarFicha(Tablero tablero) {
+        tablero.getMuertos().add(this);
         this.vivo = false;
     }
 
@@ -67,5 +66,11 @@ public abstract class Ficha {
     // Método abstracto para que cada pieza implemente su movimiento
     public abstract boolean esMovimientoValido(int nuevoX, int nuevoY, Tablero tablero);
 
+
+    //colocaremos todos los posibles movimeintos
+    public abstract List<int[]> listaMovimientosValidos(Tablero tablero);
+
+    // Método abstracto para obtener la ruta de la imagen de la pieza
+    public abstract String getRutaImagen();
 
 }
